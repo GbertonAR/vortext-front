@@ -19,18 +19,32 @@ jobs:
         with:
           submodules: true
           lfs: false
-      - name: Build And Deploy
+
+      # ✅ Forzar Node 20
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # ✅ Instalar dependencias y build
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build
+
+      # ✅ Deploy a Azure Static Web Apps
+      - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROUD_DUNE_06AFAF61E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # App source code path
-          api_location: "" # Api source code path - optional
-          output_location: "." # Built app content directory - optional
+          ###### Repository/Build Configurations ######
+          app_location: "/" # Path donde está el package.json y código fuente
+          api_location: ""  # Path a Azure Functions si tienes, opcional
+          output_location: "dist" # Aquí va tu carpeta resultante del build de Vite
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
