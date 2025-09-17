@@ -10,7 +10,9 @@ const App = () => {
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
 
-  const wsUrl = `ws://${window.location.hostname}:8000/ws/live`;
+  // const wsUrl = `ws://${window.location.hostname}:8000/ws/live`;
+
+  const wsUrl = `ws://translate-bac-e6baa0hbhsa2g7bd.westus-01.azurewebsites.net:8000/ws/live`;  
 
   useEffect(() => {
     return () => {
