@@ -1,24 +1,30 @@
 // src/components/Home.tsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
   return (
+    <div className="home-container">
+      <div className="home-content">
+        <h1 className="main-title">🌐 **Vortex** Live Translation</h1>
+        <p className="subtitle">
+          Tu voz, sin barreras. Conecta, traduce, evoluciona.
+        </p>
 
-    <div className="lt-container">
-      <h1 className="lt-title">🌐 FlowState Live Translation</h1>
-      <p className="lt-subtitle">Innovación, conexión y dinamismo en tiempo real</p>
-
-
-        <div style={{ textAlign: 'center', marginTop: '50px', padding: '20px' }}>
-            <h1>Elige tu modo de conexión</h1>
-            <p style={{ fontSize: '1.2em', color: '#555' }}>
-                    Selecciona si eres el orador o un oyente para iniciar la sesión.
-            </p>
-            <div style={{ marginTop: '30px' }}>
-                <button style={{ margin: '10px', padding: '15px 30px', fontSize: '1.1em', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}>Modo Orador</button>
-                <button style={{ margin: '10px', padding: '15px 30px', fontSize: '1.1em', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px' }}>Modo Oyente</button>
-            </div>
+        <div className="mode-selector">
+          <p className="selector-instruction">
+            Elige tu rol en la conexión en tiempo real:
+          </p>
+          <div className="button-group">
+            <Link to="/orador" className="mode-button speaker-button">
+              <span className="icon">🗣️</span> Modo Orador
+            </Link>
+            <Link to="/oyente" className="mode-button listener-button">
+              <span className="icon">👂</span> Modo Oyente
+            </Link>
+          </div>
         </div>
+      </div>
     </div>
   );
 };
