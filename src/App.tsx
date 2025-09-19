@@ -1,8 +1,9 @@
 // App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Orador from './components/Orador';
-import Oyente from './components/Oyente';
+import Orador from '../components/Orador';
+import Oyente from '../components/Oyente';
+
 
 const App: React.FC = () => {
   return (
