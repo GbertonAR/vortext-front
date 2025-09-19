@@ -1,104 +1,130 @@
-// components/Oyente.tsx
+// src/components/Oyente.tsx
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import "../src/App.css";
 
 const Oyente: React.FC = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState('es');
-  const [translatedText, setTranslatedText] = useState('Esperando traducción...');
-  const [isListening, setIsListening] = useState(false);
-  const ws = useRef<WebSocket | null>(null);
+  const [status, setStatus] = useState("Detenido");
+  const [translations, setTranslations] = useState<string[]>([]);
+  const [playAudio, setPlayAudio] = useState(true);
+  const [targetLang, setTargetLang] = useState("es");
+  const wsRef = useRef<WebSocket | null>(null);
+  const audioQueueRef = useRef<string[]>([]);
+  const isPlayingRef = useRef(false);
 
-  const connectToStream = () => {
-    if (ws.current) {
-      ws.current.close();
-    }
-    
-    // Conectar al WebSocket del oyente con el idioma seleccionado
-    ws.current = new WebSocket(`ws://localhost:8000/ws/listener?lang=${selectedLanguage}`);
+  // URL del WebSocket, recuerda reemplazarla con la de tu despliegue en Azure
+  const wsUrl = `wss://tu-azure-app-service.azurewebsites.net/ws/listener?lang=${targetLang}`;
 
-    ws.current.onopen = () => {
-      console.log(`Conectado como oyente en idioma: ${selectedLanguage}`);
-      setTranslatedText('Conectado. Esperando mensajes del orador...');
-      setIsListening(true);
-    };
-
-    ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.translated_text) {
-        console.log('Mensaje recibido:', data);
-        setTranslatedText(data.translated_text);
-      }
-    };
-
-    ws.current.onclose = () => {
-      console.log('Desconectado del stream.');
-      setTranslatedText('Desconectado del orador. Por favor, reconéctate.');
-      setIsListening(false);
-    };
-
-    ws.current.onerror = (event) => {
-      console.error("Error en WebSocket:", event);
-      setTranslatedText('Error de conexión. Revisa el backend.');
-      setIsListening(false);
-    };
-  };
-
-  const disconnectFromStream = () => {
-    if (ws.current) {
-      ws.current.close();
-      setIsListening(false);
-    }
-  };
-
-  // Limpiar la conexión al desmontar el componente
   useEffect(() => {
     return () => {
-      if (ws.current) {
-        ws.current.close();
+      if (wsRef.current) {
+        wsRef.current.close();
       }
     };
   }, []);
 
+  const connectToStream = () => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+    
+    const ws = new WebSocket(wsUrl);
+    ws.onopen = () => setStatus("Activo");
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.status) setStatus(data.status);
+        if (data.translated_text) {
+          setTranslations((prev) => [data.translated_text, ...prev].slice(0, 3));
+        }
+        if (playAudio && data.audio_url) {
+          audioQueueRef.current.push(data.audio_url);
+          if (!isPlayingRef.current) playNextAudio();
+        }
+      } catch (e) {
+        console.error("Error al parsear el mensaje:", e);
+      }
+    };
+    ws.onclose = () => setStatus("Desconectado");
+    ws.onerror = () => setStatus("Error");
+    wsRef.current = ws;
+  };
+
+  const playNextAudio = () => {
+    if (audioQueueRef.current.length > 0 && playAudio) {
+      isPlayingRef.current = true;
+      const audioUrl = audioQueueRef.current.shift();
+      const audio = new Audio(audioUrl!);
+      audio.play().catch(e => console.error("Error al reproducir audio:", e));
+      audio.onended = () => playNextAudio();
+    } else {
+      isPlayingRef.current = false;
+    }
+  };
+
+  const stopTranslation = () => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+    setStatus("Detenido");
+  };
+
+  const toggleAudio = () => {
+    setPlayAudio(!playAudio);
+  };
+
+  const getStatusDotColor = () => {
+    if (status === "Activo") return "green";
+    return "red";
+  };
+
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Modo Oyente 👂</h1>
-      <p>Selecciona tu idioma para escuchar la traducción en vivo.</p>
-      
-      <div style={{ marginBottom: '20px' }}>
+    <div className="lt-container">
+      <h1 className="lt-title">👂 Modo Oyente</h1>
+      <p className="lt-subtitle">Elige tu idioma y escucha la traducción en tiempo real.</p>
+
+      <div className="lt-status">
+        <div className="lt-status-dot" style={{ backgroundColor: getStatusDotColor() }}></div>
+        <p><strong>Estado:</strong> {status}</p>
+      </div>
+
+      <div className="lt-controls">
+        {status === "Detenido" || status === "Desconectado" || status === "Error" ? (
+          <button onClick={connectToStream} className="lt-btn start">
+            Iniciar Traducción
+          </button>
+        ) : (
+          <button onClick={stopTranslation} className="lt-btn stop">
+            Detener Traducción
+          </button>
+        )}
         <select
-          value={selectedLanguage}
-          onChange={(e) => setSelectedLanguage(e.target.value)}
-          disabled={isListening}
-          style={{ padding: '8px', fontSize: '1em' }}
+          value={targetLang}
+          onChange={(e) => setTargetLang(e.target.value)}
+          className="lt-select"
+          disabled={status === "Activo"}
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
           <option value="fr">Francés</option>
-          <option value="it">Italiano</option>
           <option value="de">Alemán</option>
           <option value="pt">Portugués</option>
         </select>
+        <button
+          onClick={toggleAudio}
+          className={`lt-btn ${playAudio ? "audio-on" : "audio-off"}`}
+        >
+          <span role="img" aria-label="volume">{playAudio ? "🔊" : "🔇"}</span> Audio {playAudio ? "ON" : "OFF"}
+        </button>
       </div>
 
+      <div className="lt-translations">
+        {translations.map((t, idx) => (
+          <p key={idx} className="lt-translation">{t}</p>
+        ))}
+      </div>
       <div style={{ marginTop: '20px' }}>
-        <button
-          onClick={connectToStream}
-          disabled={isListening}
-          style={{ padding: '10px 20px', fontSize: '1em', cursor: 'pointer', marginRight: '10px' }}
-        >
-          {isListening ? 'Escuchando...' : 'Conectar'}
-        </button>
-        <button
-          onClick={disconnectFromStream}
-          disabled={!isListening}
-          style={{ padding: '10px 20px', fontSize: '1em', cursor: 'pointer', backgroundColor: '#dc3545', color: 'white', border: 'none' }}
-        >
-          Desconectar
-        </button>
-      </div>
-
-      <div style={{ marginTop: '40px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-        <p style={{ fontSize: '1.5em', fontWeight: 'bold' }}>Traducción en vivo:</p>
-        <p style={{ fontSize: '1.5em', fontStyle: 'italic', color: '#333' }}>{translatedText}</p>
+        <Link to="/" className="lt-btn audio-off">Volver</Link>
       </div>
     </div>
   );

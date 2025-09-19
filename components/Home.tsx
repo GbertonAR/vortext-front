@@ -1,29 +1,22 @@
 // src/components/Home.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import "../src/App.css";
+import "../src/index.css"; // Asegúrate de crear este archivo CSS para los estilos
 
 const Home: React.FC = () => {
   return (
-    <div className="home-container">
-      <div className="home-content">
-        <h1 className="main-title">🌐 **Vortex** Live Translation</h1>
-        <p className="subtitle">
-          Tu voz, sin barreras. Conecta, traduce, evoluciona.
-        </p>
+    <div className="lt-container">
+      <h1 className="lt-title">🌐 FlowState Live Translation</h1>
+      <p className="lt-subtitle">Innovación, conexión y dinamismo en tiempo real</p>
 
-        <div className="mode-selector">
-          <p className="selector-instruction">
-            Elige tu rol en la conexión en tiempo real:
-          </p>
-          <div className="button-group">
-            <Link to="/orador" className="mode-button speaker-button">
-              <span className="icon">🗣️</span> Modo Orador
-            </Link>
-            <Link to="/oyente" className="mode-button listener-button">
-              <span className="icon">👂</span> Modo Oyente
-            </Link>
-          </div>
-        </div>
+      <div className="lt-controls">
+        <Link to="/orador" className="lt-btn start">
+          <span role="img" aria-label="speaker">🗣️</span> Orador
+        </Link>
+        <Link to="/oyente" className="lt-btn audio-on">
+          <span role="img" aria-label="listener">👂</span> Oyente
+        </Link>
       </div>
     </div>
   );

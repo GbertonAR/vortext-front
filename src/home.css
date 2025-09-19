@@ -1,0 +1,111 @@
+/* src/styles/Home.css o App.css */
+
+/* Contenedor principal para centrar el contenido */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* Ocupa toda la altura de la vista */
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Título principal de la aplicación */
+.main-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #00f2fe, #4a91ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+/* Subtítulo descriptivo */
+.subtitle {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 0;
+  max-width: 600px;
+}
+
+/* Contenedor de selección de modo */
+.mode-selector {
+  margin-top: 4rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 3rem;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Instrucción para el usuario */
+.selector-instruction {
+  font-size: 1.1rem;
+  color: #b3c2ff;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+/* Grupo de botones */
+.button-group {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Estilos base para ambos botones */
+.mode-button {
+  display: flex;
+  align-items: center;
+  padding: 1.2rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.mode-button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mode-button .icon {
+  font-size: 1.8rem;
+  margin-right: 12px;
+  transition: transform 0.3s ease;
+}
+
+.mode-button:hover .icon {
+  transform: scale(1.1);
+}
+
+/* Estilos específicos para el botón de orador */
+.speaker-button {
+  background: linear-gradient(45deg, #ff6b6b, #ee2a7b);
+}
+
+/* Estilos específicos para el botón de oyente */
+.listener-button {
+  background: linear-gradient(45deg, #20bdff, #5433ff);
+}
+
+/* Animación de pulso para el título */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
