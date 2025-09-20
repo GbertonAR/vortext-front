@@ -13,7 +13,10 @@ const Oyente: React.FC = () => {
   const isPlayingRef = useRef(false);
 
   // URL del WebSocket, recuerda reemplazarla con la de tu despliegue en Azure
-  const wsUrl = `wss://tu-azure-app-service.azurewebsites.net/ws/listener?lang=${targetLang}`;
+  // const wsUrl = `wss://127.0.0.1:8000/ws/listener?lang=${targetLang}`;
+
+  // URL del WebSocket, recuerda reemplazarla con la de tu despliegue Local
+  const wsUrl = `${import.meta.env.VITE_API_URL}/ws/listener?lang=${targetLang}`;
 
   useEffect(() => {
     return () => {
@@ -35,7 +38,7 @@ const Oyente: React.FC = () => {
         const data = JSON.parse(event.data);
         if (data.status) setStatus(data.status);
         if (data.translated_text) {
-          setTranslations((prev) => [data.translated_text, ...prev].slice(0, 3));
+          setTranslations((prev) => [data.translated_text, ...prev].slice(0, 15));
         }
         if (playAudio && data.audio_url) {
           audioQueueRef.current.push(data.audio_url);
