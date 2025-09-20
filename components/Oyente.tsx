@@ -26,6 +26,8 @@ const Oyente: React.FC = () => {
     };
   }, []);
 
+
+  
   const connectToStream = () => {
     if (wsRef.current) {
       wsRef.current.close();
