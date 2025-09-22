@@ -137,3 +137,91 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Estilos para el vúmetro vintage */
+.vumeter-vintage-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px auto;
+  width: 200px;
+  height: 100px;
+  position: relative;
+}
+
+.vumeter-dial {
+  width: 200px;
+  height: 100px;
+  border-radius: 100px 100px 0 0;
+  border: 4px solid #333;
+  border-bottom: none;
+  background-color: #f0f0f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.vumeter-needle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  height: 100px;
+  background-color: #ff4500;
+  transform-origin: bottom;
+  transition: transform 0.1s ease-out;
+  transform: rotate(-90deg);
+}
+
+/* Base del vúmetro */
+.vumeter-dial::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #333;
+}
+
+/* Estilos para el micrófono animado */
+.mic-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.mic-icon {
+  font-size: 3rem;
+  color: #E0E0E0;
+  transition: transform 0.2s ease-out;
+}
+
+.mic-icon i {
+  /* Añade tu icono de FontAwesome o similar */
+}
+
+.mic-icon svg {
+  width: 3rem; /* O el tamaño que necesites */
+  height: auto;
+  transition: transform 0.2s ease-out; /* Mantiene la animación de pulso */
+  color: #E0E0E0; /* Puedes controlar el color aquí */
+}
+
+/* Mensajes de estado */
+.status-message {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #888;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
