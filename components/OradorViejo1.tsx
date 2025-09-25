@@ -43,7 +43,7 @@ const Orador: React.FC = () => {
   };
 
   useEffect(() => {
-    return () => {
+    return () => { 
       if (ws.current) ws.current.close();
       stopAudioStream();
       if (silenceTimeout) clearTimeout(silenceTimeout);
@@ -59,7 +59,7 @@ const Orador: React.FC = () => {
       });
       if (!response.ok) { setStatus("Error de servidor"); return; }
 
-      const wsUrl = `${import.meta.env.VITE_API_URL.replace(/^http/, 'ws')}/ws/speaker/${roomId}`;
+      const wsUrl = `${import.meta.env.VITE_API_URL}/ws/speaker/${roomId}`;
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => { setStatus('Grabando y transmitiendo...'); setIsRecording(true); startAudioStream(); };
@@ -75,7 +75,6 @@ const Orador: React.FC = () => {
       streamRef.current = stream;
 
       audioContext.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      // espera que exista el audio-processor.js en /public
       await audioContext.current.audioWorklet.addModule('/audio-processor.js');
 
       audioSourceNode.current = audioContext.current.createMediaStreamSource(stream);
@@ -88,10 +87,9 @@ const Orador: React.FC = () => {
 
       audioWorkletNode.current.port.onmessage = (event) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-          const audioData = event.data as Float32Array;
+          const audioData = event.data;
           ws.current.send(float32ToInt16(audioData).buffer);
 
-          // medir volumen para VU / silence
           let sum = 0;
           for (let i = 0; i < audioData.length; i++) sum += audioData[i] * audioData[i];
           const rms = Math.sqrt(sum / audioData.length);
@@ -124,57 +122,25 @@ const Orador: React.FC = () => {
     return 'red';
   };
 
-  // ----------------- Export / Audio generation -----------------
-  const downloadBlob = (data: Blob, filename: string) => {
-    const url = URL.createObjectURL(data);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+
+  const getMicIconStyle = () => {
+    // Escala el audioLevel de 0-1 a 1-1.3 para un efecto de pulso
+    const scale = 1 + audioLevel * 0.3;
+    const color = audioLevel > 0.15 ? '#4CAF50' : '#E0E0E0'; // Color del micrófono
+    return {
+      transform: `scale(${scale})`,
+      color: color,
+      transition: 'transform 0.1s ease-out, color 0.3s ease-in-out'
+    };
   };
 
-  const exportText = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/export/original/${roomId}`);
-      if (!res.ok) {
-        alert("No pude descargar el texto (revisá que exista contenido).");
-        return;
-      }
-      const blob = await res.blob();
-      downloadBlob(blob, `${roomId}_original.txt`);
-    } catch (e) {
-      console.error(e);
-      alert("Error exportando texto.");
-    }
+  const getDialStyle = () => {
+    const angle = audioLevel * 180; // Mapea el nivel de 0-1 a un ángulo de 0-180 grados
+    return {
+      transform: `rotate(${angle - 90}deg)`, // Ajusta para que 0 esté abajo a la izquierda
+    };
   };
 
-  const generateAudio = async () => {
-    try {
-      const form = new FormData();
-      // opcional: permitir seleccionar voice_lang en UI; por ahora envio vacío (backend mapeará)
-      form.append('voice_lang', ''); 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/export/audio/${roomId}`, {
-        method: 'POST',
-        body: form
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        console.error("Error audio:", txt);
-        alert("Error generando audio en el servidor.");
-        return;
-      }
-      const blob = await res.blob();
-      downloadBlob(blob, `${roomId}_original.wav`);
-    } catch (e) {
-      console.error(e);
-      alert("Error generando audio.");
-    }
-  };
-
-  // -------------------------------------------------------------
 
   return (
     <div className="lt-container">
@@ -194,21 +160,9 @@ const Orador: React.FC = () => {
         <option value="zh-CN">Chino</option>
       </select>
 
-      <p></p>
-      <p></p>
-       
-
       <div className="lt-controls">
         <button onClick={isRecording ? stopRecording : startRecording} className={`lt-btn ${isRecording ? 'stop' : 'start'}`}>
           {isRecording ? 'Detener Transmisión' : 'Iniciar Transmisión'}
-        </button>
-
-        <button className="lt-btn audio-on" onClick={exportText} style={{ marginLeft: 10 }}>
-          📄 Exportar Texto (TXT)
-        </button>
-
-        <button className="lt-btn audio-on" onClick={generateAudio} style={{ marginLeft: 10 }}>
-          🔊 Generar / Descargar Audio (WAV)
         </button>
       </div>
 
@@ -219,12 +173,13 @@ const Orador: React.FC = () => {
         </div>
       </div>
 
-      {/* Vúmetro */}
+      {/* Vúmetro estilo vintage */}
       <div className="vumeter-vintage-container">
         <div className="vumeter-dial">
-          <div className="vumeter-needle" style={{ transform: `rotate(${audioLevel * 180 - 90}deg)` }}></div>
+          <div className="vumeter-needle" style={getDialStyle()}></div>
         </div>
       </div>
+
 
       <div style={{ marginTop: '20px' }}>
         <Link to="/" className="lt-btn audio-off">Volver</Link>

@@ -3,15 +3,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import "../src/App.css";
 
-type Message = {
-  original_text?: string;
-  translated_text?: string;
-  audio_url?: string;
-};
-
 const Oyente: React.FC = () => {
   const [status, setStatus] = useState("Detenido");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [translations, setTranslations] = useState<string[]>([]);
   const [playAudio, setPlayAudio] = useState(true);
   const [targetLang, setTargetLang] = useState("es");
   const [room, setRoom] = useState("Sala1"); // Sala por defecto
@@ -21,9 +15,7 @@ const Oyente: React.FC = () => {
 
   // Construye la URL del WebSocket dinámicamente según sala e idioma
   const getWsUrl = () => {
-    const base = import.meta.env.VITE_API_URL.replace(/^http/, 'ws');
-    // pasamos lang como query param
-    return `${base}/ws/listener/${room}?lang=${targetLang}`;
+    return `${import.meta.env.VITE_API_URL}/ws/listener/${room}?lang=${targetLang}`;
   };
 
   useEffect(() => {
@@ -41,18 +33,11 @@ const Oyente: React.FC = () => {
       try {
         const data = JSON.parse(event.data);
         if (data.status) setStatus(data.status);
+        if (data.translated_text) {
+          setTranslations((prev) => [data.translated_text, ...prev].slice(0, 15));
 
-        // server ahora envía original_text y translated_text
-        if (data.translated_text || data.original_text) {
-          const msg: Message = {
-            original_text: data.original_text,
-            translated_text: data.translated_text,
-            audio_url: data.audio_url
-          };
-          setMessages((prev) => [msg, ...prev].slice(0, 200));
-
-          // Agregar a la cola de voz la traducción (si existe)
-          if (playAudio && data.translated_text) {
+          // Agregar a la cola de voz
+          if (playAudio) {
             speechQueueRef.current.push(data.translated_text);
             if (!isSpeakingRef.current) speakNext();
           }
@@ -77,8 +62,7 @@ const Oyente: React.FC = () => {
     isSpeakingRef.current = true;
 
     const utterance = new SpeechSynthesisUtterance(text);
-    // ajustar idioma apropiado del sintetizador: pasamos targetLang (ej "es","en")
-    utterance.lang = targetLang === "zh-CN" ? "zh-CN" : targetLang;
+    utterance.lang = targetLang; // Ajusta el idioma del sintetizador
     utterance.rate = 1;
     utterance.pitch = 1;
     utterance.volume = 1;
@@ -104,28 +88,6 @@ const Oyente: React.FC = () => {
     }
     if (playAudio) {
       window.speechSynthesis.cancel();
-    }
-  };
-
-  const exportTranslation = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/export/translation/${room}/${targetLang}`);
-      if (!res.ok) {
-        alert("No hay traducción disponible o error en el servidor.");
-        return;
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${room}_translation_${targetLang}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error(e);
-      alert("Error al exportar la traducción.");
     }
   };
 
@@ -187,18 +149,11 @@ const Oyente: React.FC = () => {
         >
           <span role="img" aria-label="volume">{playAudio ? "🔊" : "🔇"}</span> Audio {playAudio ? "ON" : "OFF"}
         </button>
-
-        <button onClick={exportTranslation} className="lt-btn audio-on" style={{ marginLeft: 10 }}>
-          📄 Exportar traducción
-        </button>
       </div>
 
       <div className="lt-translations">
-        {messages.map((m, idx) => (
-          <div key={idx} className="lt-translation">
-            {m.original_text && <p className="original"><strong>Original:</strong> {m.original_text}</p>}
-            {m.translated_text && <p className="translated"><strong>Traducción:</strong> {m.translated_text}</p>}
-          </div>
+        {translations.map((t, idx) => (
+          <p key={idx} className="lt-translation">{t}</p>
         ))}
       </div>
 

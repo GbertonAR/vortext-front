@@ -133,6 +133,12 @@
   color: #d50000;     /* Rojo AI */
 }
 
+.translated {
+  color: #007bff; /* Azul para la traducción */
+  font-family: Montserrat, sans-serif;
+  font-weight: 700; /* Bold */
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
